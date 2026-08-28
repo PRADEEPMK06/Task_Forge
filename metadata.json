@@ -1,0 +1,6 @@
+{
+  "name": "TaskForge",
+  "description": "Enterprise Hierarchical Task Management Platform with unlimited organization hierarchy, immediate subordinate task delegation, approval workflows, and analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

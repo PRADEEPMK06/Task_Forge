@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Create & Delegate Task — TaskForge Enterprise{% endblock %}
+{% block page_heading %}Enterprise Task Delegation{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div>
+            <div class="flex items-center gap-2">
+                <h1 class="text-xl font-bold text-slate-900">Create & Assign New Task</h1>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-100 text-brand-800 border border-brand-200">
+                    {{ user.level_label }}
+                </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Assign work to direct team members or delegate across hierarchy with multi-tier parent approvals.</p>
+        </div>
+        <a href="{% url 'tasks:task_list' %}" class="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition-colors self-start sm:self-auto">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            <span>Back to Tasks</span>
+        </a>
+    </div>
+
+    {% if not can_create %}
+    <!-- Permission Warning for Individual Contributors without Subordinates -->
+    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 shadow-sm">
+        <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 font-bold">
+                ⚠️
+            </div>
+            <div class="space-y-2">
+                <h3 class="text-sm font-bold text-amber-900">Task Creation Restriction Policy</h3>
+                <p class="text-xs text-amber-800 leading-relaxed">
+                    Under TaskForge organizational rules, task creation is enabled for users who have at least one direct subordinate or supervisory role in the hierarchy.
+                </p>
+                <div class="p-3 bg-white/80 rounded-xl border border-amber-200 text-xs text-slate-700">
+                    <strong>Your Current Role:</strong> {{ user.role }} ({{ user.level_label }}). You do not currently have direct subordinates assigned.
+                </div>
+                <p class="text-xs text-amber-700">
+                    To test task creation, you can quickly switch to a supervisory role (such as <strong>Level 3 Lead: Alex Chen</strong>, <strong>Level 2 VP: Sarah Connor</strong>, or <strong>Level 1: Admin</strong>) using the role switcher at the top right!
+                </p>
+            </div>
+        </div>
+    </div>
+    {% else %}
+
+    <!-- Policy Guide Info Banner -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-4 flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                ⚡
+            </div>
+            <div>
+                <h4 class="text-xs font-bold text-emerald-900">Direct Delegation (Instant)</h4>
+                <p class="text-[11px] text-emerald-800 mt-0.5 leading-normal">
+                    Tasks assigned to your direct subordinates are dispatched immediately with status <strong class="text-emerald-950">Assigned</strong>.
+                </p>
+            </div>
+        </div>
+
+        <div class="bg-blue-50/70 border border-blue-200/80 rounded-2xl p-4 flex items-start gap-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                🛡️
+            </div>
+            <div>
+                <h4 class="text-xs font-bold text-blue-900">Cross-Level Delegation (Multi-Tier Approval)</h4>
+                <p class="text-[11px] text-blue-800 mt-0.5 leading-normal">
+                    Tasks assigned to parents (L2, L1) or across departments require sequential sign-off by your approving parent chain before dispatch.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Creation Form -->
+    <form method="post" action="{% url 'tasks:create_task' %}" class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+        {% csrf_token %}
+
+        <!-- Title -->
+        <div>
+            <label for="id_title" class="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
+                Task Title <span class="text-rose-500">*</span>
+            </label>
+            <input type="text" name="title" id="id_title" required
+                   placeholder="e.g., Implement OAuth2 token refresh & session hardening"
+                   class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 text-sm font-medium transition-all">
+        </div>
+
+        <!-- Description -->
+        <div>
+            <label for="id_description" class="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
+                Task Description & Acceptance Criteria
+            </label>
+            <textarea name="description" id="id_description" rows="4"
+                      placeholder="Outline key deliverables, technical requirements, and verification criteria..."
+                      class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 text-sm font-medium transition-all"></textarea>
+        </div>
+
+        <!-- Assignee Selection with Hierarchy Breakdown -->
+        <div>
+            <div class="flex items-center justify-between mb-2">
+                <label for="id_assigned_to" class="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+                    Assignee & Delegation Target <span class="text-rose-500">*</span>
+                </label>
+                <span id="delegation-mode-badge" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                    Select Assignee Below
+                </span>
+            </div>
+
+            <select name="assigned_to" id="id_assigned_to" required onchange="handleAssigneeChange(this)"
+                    class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 text-sm font-medium transition-all bg-white">
+                <option value="" disabled selected>— Choose Assignee from Organization Hierarchy —</option>
+                
+                {% if subordinates %}
+                <optgroup label="Direct Subordinates (Instant Direct Assignment)">
+                    {% for sub in subordinates %}
+                    <option value="{{ sub.id }}" data-type="subordinate" data-name="{{ sub.display_name }}" data-role="{{ sub.role }}" data-level="{{ sub.level_label }}">
+                        ⚡ {{ sub.display_name }} ({{ sub.role }}) — Direct Subordinate
+                    </option>
+                    {% endfor %}
+                </optgroup>
+                {% endif %}
+
+                {% if other_members %}
+                <optgroup label="Cross-Level / Parent Leadership / Peers (Requires Multi-Tier Parent Approvals)">
+                    {% for mem in other_members %}
+                    <option value="{{ mem.id }}" data-type="cross_level" data-name="{{ mem.display_name }}" data-role="{{ mem.role }}" data-level="{{ mem.level_label }}">
+                        🛡️ {{ mem.display_name }} — {{ mem.role }} ({{ mem.level_label }})
+                    </option>
+                    {% endfor %}
+                </optgroup>
+                {% endif %}
+            </select>
+        </div>
+
+        <!-- Dynamic Approval Preview Banner -->
+        <div id="approval-preview-box" class="hidden p-4 rounded-xl border transition-all duration-200">
+            <!-- Populated via JavaScript -->
+        </div>
+
+        <!-- Priority & Due Date -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label for="id_priority" class="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
+                    Priority Level <span class="text-rose-500">*</span>
+                </label>
+                <select name="priority" id="id_priority"
+                        class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 text-sm font-medium transition-all bg-white">
+                    {% for value, label in priority_choices %}
+                    <option value="{{ value }}" {% if value == 'MEDIUM' %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="id_due_date" class="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">
+                    Target Due Date
+                </label>
+                <input type="date" name="due_date" id="id_due_date"
+                       class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 text-sm font-medium transition-all">
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+            <a href="{% url 'tasks:task_list' %}" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold text-xs transition-colors">
+                Cancel
+            </a>
+            <button type="submit" class="px-6 py-2.5 bg-brand-500 hover:bg-brand-600 text-slate-950 font-bold rounded-xl text-xs transition-all shadow-md shadow-brand-500/20 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>Dispatch / Submit Task</span>
+            </button>
+        </div>
+    </form>
+    {% endif %}
+
+</div>
+
+<script>
+function handleAssigneeChange(selectEl) {
+    const selectedOption = selectEl.options[selectEl.selectedIndex];
+    const type = selectedOption.getAttribute('data-type');
+    const name = selectedOption.getAttribute('data-name');
+    const role = selectedOption.getAttribute('data-role');
+    const level = selectedOption.getAttribute('data-level');
+    
+    const badge = document.getElementById('delegation-mode-badge');
+    const box = document.getElementById('approval-preview-box');
+
+    if (!type) {
+        box.classList.add('hidden');
+        badge.textContent = "Select Assignee";
+        badge.className = "text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600";
+        return;
+    }
+
+    box.classList.remove('hidden');
+
+    if (type === 'subordinate') {
+        badge.textContent = "⚡ Direct Assignment (Instant)";
+        badge.className = "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200";
+        
+        box.className = "p-4 rounded-xl border border-emerald-200 bg-emerald-50/60 text-xs text-emerald-900";
+        box.innerHTML = `
+            <div class="flex items-start gap-2.5">
+                <span class="text-base">✅</span>
+                <div>
+                    <div class="font-bold text-emerald-950">Direct Team Delegation</div>
+                    <div class="mt-0.5 text-emerald-800 leading-relaxed">
+                        <strong>${name}</strong> (${role}) is your direct report. This task will be assigned immediately without requiring prior managerial sign-offs.
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        badge.textContent = "🛡️ Cross-Level (Requires Approval)";
+        badge.className = "text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200";
+        
+        const parentChainHtml = `
+            {% if parent_approvers %}
+            <div class="mt-2 pl-4 border-l-2 border-blue-300 space-y-1">
+                {% for p in parent_approvers %}
+                <div class="flex items-center gap-1.5 text-blue-900 font-medium">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                    <span>Tier {{ forloop.counter }}: <strong>{{ p.display_name }}</strong> ({{ p.level_label }})</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="mt-1 text-slate-600">You are at Level 1 Executive tier, so delegation has top executive sign-off.</div>
+            {% endif %}
+        `;
+
+        box.className = "p-4 rounded-xl border border-blue-200 bg-blue-50/60 text-xs text-blue-900";
+        box.innerHTML = `
+            <div class="flex items-start gap-2.5">
+                <span class="text-base">🛡️</span>
+                <div>
+                    <div class="font-bold text-blue-950">Cross-Hierarchy Delegation Request</div>
+                    <div class="mt-0.5 text-blue-800 leading-relaxed">
+                        Assigning to <strong>${name}</strong> (${level}) requires multi-tier permission from your supervisor and leadership chain:
+                    </div>
+                    ${parentChainHtml}
+                    <div class="mt-2 text-[11px] text-blue-700">
+                        Once submitted, the task will be marked <strong>Pending Parent Approval</strong> until all parent tiers review and approve the assignment in the Approvals portal.
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+</script>
+{% endblock %}

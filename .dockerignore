@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+.env.local
+.python_packages
+__pycache__
+*.pyc
+.DS_Store
+Dockerfile*
+docker-compose*
+README.md

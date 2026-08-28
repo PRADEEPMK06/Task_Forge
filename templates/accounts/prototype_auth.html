@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}TaskForge Prototype — Role Selection & Instant Registration{% endblock %}
+
+{% block auth_content %}
+<div class="max-w-6xl mx-auto px-4 py-8 space-y-8">
+
+    <!-- Prototype Header -->
+    <div class="text-center space-y-2">
+        <div class="inline-flex items-center gap-2 px-3 py-1 bg-brand-500/10 border border-brand-500/30 rounded-full text-brand-400 text-xs font-mono font-bold tracking-wider">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            TASKFORGE PROTOTYPE PORTAL
+        </div>
+        <h1 class="text-3xl font-extrabold text-white tracking-tight">Hierarchical Role Selector & Registration</h1>
+        <p class="text-xs text-slate-400 max-w-xl mx-auto leading-relaxed">
+            Select any registered organizational role below or register a new role. All account credentials (<strong class="text-slate-200 font-mono">Email & Password</strong>) are displayed for instant 1-click dashboard access.
+        </p>
+    </div>
+
+    <!-- Main 2-Column or Tabbed Layout: Left = Register New Role | Right = Registered Roles Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+        <!-- Left Column (5 Cols): Register New Role Form -->
+        <div class="lg:col-span-5 bg-slate-950 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800/80">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-brand-500 text-slate-950 flex items-center justify-center font-bold text-sm">
+                        +
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-bold text-white">Register New Role / Member</h2>
+                        <p class="text-[11px] text-slate-400">Add a custom member to the hierarchy</p>
+                    </div>
+                </div>
+                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-900 text-brand-400 border border-slate-800">
+                    Instant Auth
+                </span>
+            </div>
+
+            <form method="post" action="{% url 'accounts:register' %}" class="space-y-4">
+                {% csrf_token %}
+
+                <!-- Full Name -->
+                <div>
+                    <label for="reg_name" class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                        Full Name <span class="text-brand-400">*</span>
+                    </label>
+                    <input type="text" name="name" id="reg_name" required placeholder="e.g., David Miller"
+                           class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-xs font-medium transition-all">
+                </div>
+
+                <!-- Email (Main Mail) -->
+                <div>
+                    <label for="reg_email" class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                        Email Address (Mail) <span class="text-brand-400">*</span>
+                    </label>
+                    <input type="email" name="email" id="reg_email" required placeholder="e.g., david.miller@taskforge.io"
+                           class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-xs font-medium transition-all">
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label for="reg_password" class="block text-[11px] font-bold uppercase tracking-wider text-slate-300">
+                            Password <span class="text-brand-400">*</span>
+                        </label>
+                        <span class="text-[10px] text-slate-400 font-mono">Default: <strong class="text-brand-300">Admin@123</strong></span>
+                    </div>
+                    <input type="text" name="password" id="reg_password" value="{{ default_password }}" required
+                           class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-xs font-mono font-medium transition-all">
+                </div>
+
+                <!-- Job Title / Role -->
+                <div>
+                    <label for="reg_role" class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                        Job Title / Role <span class="text-brand-400">*</span>
+                    </label>
+                    <input type="text" name="role" id="reg_role" required placeholder="e.g., Security Lead, Mobile Architect, QA Engineer"
+                           class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-xs font-medium transition-all">
+                </div>
+
+                <!-- Reporting Manager (Hierarchy Placement) -->
+                <div>
+                    <label for="reg_manager" class="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1">
+                        Reports To (Manager / Supervisor)
+                    </label>
+                    <select name="manager_id" id="reg_manager"
+                            class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none text-xs font-medium transition-all">
+                        <option value="">— None (Top Executive Tier / Level 1) —</option>
+                        {% for m in managers %}
+                        <option value="{{ m.id }}">
+                            {{ m.display_name }} — {{ m.role }} ({{ m.level_label }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Submit and Move to Dashboard -->
+                <button type="submit" class="w-full py-3 px-4 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-slate-950 font-bold rounded-xl text-xs transition-all shadow-lg shadow-brand-500/25 flex items-center justify-center gap-2 cursor-pointer mt-2">
+                    <span>Register & Launch Role Dashboard</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+        <!-- Right Column (7 Cols): Registered Prototype Roles with Mail & Password Display -->
+        <div class="lg:col-span-7 space-y-4">
+            
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-brand-400"></span>
+                        Registered Roles (Click to Enter Dashboard)
+                    </h2>
+                    <p class="text-[11px] text-slate-400">Credentials and hierarchy tier displayed for each role</p>
+                </div>
+                <span class="text-xs font-mono font-bold text-slate-400">{{ users|length }} Active Account{{ users|length|pluralize }}</span>
+            </div>
+
+            <!-- Role Cards Grid -->
+            <div class="space-y-3 max-h-[640px] overflow-y-auto pr-1">
+                {% for u in users %}
+                <div class="bg-slate-950 border border-slate-800 hover:border-brand-500/50 rounded-2xl p-4.5 transition-all shadow-lg group relative overflow-hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        
+                        <!-- User Meta & Hierarchy Details -->
+                        <div class="space-y-1.5 flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-bold text-sm text-white group-hover:text-brand-300 transition-colors truncate">
+                                    {{ u.display_name }}
+                                </span>
+
+                                <!-- Level Badges -->
+                                {% if u.hierarchy_level == 1 %}
+                                <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-purple-900/60 text-purple-300 border border-purple-700/60">
+                                    👑 Level 1 (Executive)
+                                </span>
+                                {% elif u.hierarchy_level == 2 %}
+                                <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-blue-900/60 text-blue-300 border border-blue-700/60">
+                                    💼 Level 2 (Director / VP)
+                                </span>
+                                {% elif u.hierarchy_level == 3 %}
+                                <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-teal-900/60 text-teal-300 border border-teal-700/60">
+                                    ⚡ Level 3 (Team Lead)
+                                </span>
+                                {% else %}
+                                <span class="px-2 py-0.5 text-[10px] font-extrabold rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                                    👩‍💻 Level 4 (Contributor)
+                                </span>
+                                {% endif %}
+
+                                {% if u.can_create_tasks %}
+                                <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-400 border border-emerald-800/60" title="Has direct reports or admin rights to create tasks">
+                                    Can Create Tasks
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="text-xs text-slate-300 font-medium truncate">
+                                {{ u.role }}
+                                {% if u.manager %}
+                                <span class="text-slate-500 font-normal"> • Reports to <strong class="text-slate-400">{{ u.manager.display_name }}</strong></span>
+                                {% else %}
+                                <span class="text-purple-400 font-normal"> • Top of Organization</span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Mail and Password Explicit Display Box -->
+                            <div class="flex flex-wrap items-center gap-3 pt-1 text-[11px] font-mono">
+                                <div class="flex items-center gap-1.5 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">
+                                    <span class="text-slate-500 font-sans font-bold text-[10px] uppercase">Mail:</span>
+                                    <span class="text-brand-300 font-semibold">{{ u.email }}</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800 text-slate-300">
+                                    <span class="text-slate-500 font-sans font-bold text-[10px] uppercase">Pass:</span>
+                                    <span class="text-emerald-400 font-semibold">Admin@123</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 1-Click Launch Button -->
+                        <form method="post" action="{% url 'accounts:login' %}" class="flex-shrink-0">
+                            {% csrf_token %}
+                            <input type="hidden" name="user_id" value="{{ u.id }}">
+                            <button type="submit" class="w-full sm:w-auto px-4 py-2.5 bg-slate-900 hover:bg-brand-500 hover:text-slate-950 text-white font-bold rounded-xl text-xs transition-all border border-slate-700 hover:border-brand-500 flex items-center justify-center gap-2 group-hover:shadow-md cursor-pointer">
+                                <span>Launch Dashboard</span>
+                                <svg class="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                                </svg>
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+                {% empty %}
+                <div class="p-8 text-center bg-slate-950 rounded-2xl border border-slate-800 text-slate-400 text-xs">
+                    No registered roles found. Register a new role using the form on the left.
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

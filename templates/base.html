@@ -1,0 +1,86 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TaskForge — Enterprise Hierarchical Task Management{% endblock %}</title>
+    <meta name="description" content="Enterprise Hierarchical Task Management System">
+    
+    <!-- Modern Google Fonts: Inter & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN for pristine, modern, zero-dependency styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#F0FDFA',
+                            100: '#CCFBF1',
+                            200: '#99F6E4',
+                            300: '#5EEAD4',
+                            400: '#2DD4BF',
+                            500: '#14B8A6', // TaskForge Primary Teal
+                            600: '#0D9488', // TaskForge Primary Dark
+                            700: '#0F766E',
+                            800: '#115E59',
+                            900: '#134E4A',
+                        },
+                        slate: {
+                            925: '#0B0F19',
+                            950: '#070A11',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+    <!-- Custom TaskForge CSS -->
+    <link rel="stylesheet" href="{% static 'css/taskforge.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="h-full font-sans antialiased text-slate-900 bg-slate-50 flex overflow-hidden">
+    {% if user.is_authenticated %}
+        <!-- Sidebar Component -->
+        {% include 'includes/sidebar.html' %}
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+            <!-- Topbar Navigation -->
+            {% include 'includes/topbar.html' %}
+
+            <!-- Messages/Alerts -->
+            {% include 'includes/messages.html' %}
+
+            <!-- Main Page Content -->
+            <main class="flex-1 overflow-y-auto bg-slate-50/60 p-4 sm:p-6 lg:p-8">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    {% else %}
+        <!-- Unauthenticated Layout (Auth/Landing) -->
+        <div class="flex-1 min-h-screen flex flex-col justify-center bg-slate-900">
+            {% include 'includes/messages.html' %}
+            {% block auth_content %}{% endblock %}
+        </div>
+    {% endif %}
+
+    <!-- TaskForge Global Scripts -->
+    <script src="{% static 'js/taskforge.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

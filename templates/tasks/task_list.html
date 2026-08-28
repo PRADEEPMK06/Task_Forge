@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Enterprise Tasks — TaskForge Enterprise{% endblock %}
+{% block page_heading %}Enterprise Task Management{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-7xl mx-auto">
+    <!-- Header with Action -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div>
+            <div class="flex items-center gap-2">
+                <h1 class="text-xl font-bold text-slate-900">Task Directory</h1>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-100 text-brand-800 border border-brand-200">
+                    {{ tasks.count }} Total Task{{ tasks.count|pluralize }}
+                </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">Filter, monitor execution progress, and review multi-tier approvals</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'tasks:create_task' %}" class="px-4 py-2.5 bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold rounded-xl text-xs transition-all shadow-md shadow-brand-500/20 flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>Create New Task</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters Bar -->
+    <div class="flex flex-wrap items-center gap-2.5 bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-xs">
+        <span class="font-bold text-slate-700 uppercase tracking-wider text-[10px] mr-1">Status:</span>
+        <a href="{% url 'tasks:task_list' %}" class="px-3 py-1.5 rounded-lg font-semibold transition-colors {% if not current_status %}bg-brand-500 text-slate-950 shadow-sm{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
+            All
+        </a>
+        {% for value, label in status_choices %}
+        <a href="?status={{ value }}" class="px-3 py-1.5 rounded-lg font-semibold transition-colors {% if current_status == value %}bg-brand-500 text-slate-950 shadow-sm{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
+            {{ label }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <!-- Tasks Table -->
+    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
+                <thead class="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                    <tr>
+                        <th class="px-6 py-3.5">Task & Type</th>
+                        <th class="px-6 py-3.5">Priority</th>
+                        <th class="px-6 py-3.5">Assigned To</th>
+                        <th class="px-6 py-3.5">Status</th>
+                        <th class="px-6 py-3.5">Progress</th>
+                        <th class="px-6 py-3.5">Due Date</th>
+                        <th class="px-6 py-3.5 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for task in tasks %}
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <a href="{% url 'tasks:task_detail' task.id %}" class="font-bold text-slate-900 hover:text-brand-600 transition-colors">
+                                    {{ task.title }}
+                                </a>
+                                {% if task.is_cross_level %}
+                                <span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-blue-100 text-blue-700 uppercase">Cross-Level</span>
+                                {% endif %}
+                            </div>
+                            <div class="text-xs text-slate-500 max-w-md line-clamp-1 mt-0.5">{{ task.description|default:"No description" }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if task.priority == 'CRITICAL' %}
+                            <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-rose-100 text-rose-700">Critical</span>
+                            {% elif task.priority == 'HIGH' %}
+                            <span class="px-2.5 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-800">High</span>
+                            {% elif task.priority == 'MEDIUM' %}
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-sky-100 text-sky-700">Medium</span>
+                            {% else %}
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-700">Low</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="font-medium text-slate-900">{{ task.assigned_to.display_name }}</div>
+                            <div class="text-[11px] text-slate-500">{{ task.assigned_to.role }} ({{ task.assigned_to.level_label }})</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if task.status == 'COMPLETED' or task.status == 'APPROVED' %}
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">
+                                {{ task.get_status_display }}
+                            </span>
+                            {% elif task.status == 'IN_PROGRESS' %}
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-sky-100 text-sky-800">
+                                {{ task.get_status_display }}
+                            </span>
+                            {% elif task.status == 'PENDING_APPROVAL' or task.status == 'SUBMITTED' %}
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
+                                {{ task.get_status_display }}
+                            </span>
+                            {% elif task.status == 'REJECTED' %}
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-rose-100 text-rose-800">
+                                {{ task.get_status_display }}
+                            </span>
+                            {% else %}
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-100 text-slate-700">
+                                {{ task.get_status_display }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center gap-2">
+                                <div class="w-20 bg-slate-200 rounded-full h-2 overflow-hidden">
+                                    <div class="bg-brand-500 h-2 rounded-full" style="width: {{ task.progress }}%"></div>
+                                </div>
+                                <span class="text-xs font-mono font-bold text-slate-600">{{ task.progress }}%</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-xs text-slate-500 font-mono">
+                            {{ task.due_date|date:"M d, Y"|default:"No deadline" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-xs">
+                            <a href="{% url 'tasks:task_detail' task.id %}" class="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors">
+                                <span>Details</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center text-slate-400">
+                            No tasks found matching current filter criteria.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

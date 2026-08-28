@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}Task #{{ task.id }}: {{ task.title }} — TaskForge Enterprise{% endblock %}
+{% block page_heading %}Task #{{ task.id }} Workspace{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Top Action & Navigation Bar -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="flex items-center gap-3">
+            <a href="{% url 'tasks:task_list' %}" class="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors" title="Back to tasks">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+            </a>
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-mono font-bold text-slate-400">TASK-{{ task.id }}</span>
+                    {% if task.is_cross_level %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-blue-100 text-blue-800 border border-blue-200 uppercase tracking-wider">Cross-Level Delegation</span>
+                    {% else %}
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase tracking-wider">Direct Assignment</span>
+                    {% endif %}
+                </div>
+                <h1 class="text-xl font-bold text-slate-900 mt-0.5">{{ task.title }}</h1>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <a href="{% url 'tasks:create_task' %}" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-xs transition-colors flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>+ New Task</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Grid: Left Details & Progress | Right Approval Chain & Activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Left 2 Cols: Overview, Description, Assignee Controls, Comments -->
+        <div class="lg:col-span-2 space-y-6">
+
+            <!-- Core Task Card -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+                
+                <!-- Status & Priority Badges -->
+                <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Status:</span>
+                        {% if task.status == 'COMPLETED' or task.status == 'APPROVED' %}
+                        <span class="px-3 py-1 text-xs font-bold rounded-full bg-emerald-100 text-emerald-800 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            {{ task.get_status_display }}
+                        </span>
+                        {% elif task.status == 'PENDING_APPROVAL' or task.status == 'SUBMITTED' %}
+                        <span class="px-3 py-1 text-xs font-bold rounded-full bg-amber-100 text-amber-800 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span>
+                            {{ task.get_status_display }}
+                        </span>
+                        {% elif task.status == 'IN_PROGRESS' %}
+                        <span class="px-3 py-1 text-xs font-bold rounded-full bg-sky-100 text-sky-800 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
+                            {{ task.get_status_display }}
+                        </span>
+                        {% elif task.status == 'REJECTED' %}
+                        <span class="px-3 py-1 text-xs font-bold rounded-full bg-rose-100 text-rose-800">
+                            {{ task.get_status_display }}
+                        </span>
+                        {% else %}
+                        <span class="px-3 py-1 text-xs font-bold rounded-full bg-slate-100 text-slate-700">
+                            {{ task.get_status_display }}
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Priority:</span>
+                        {% if task.priority == 'CRITICAL' %}
+                        <span class="px-2.5 py-0.5 text-xs font-bold rounded bg-rose-100 text-rose-700">Critical</span>
+                        {% elif task.priority == 'HIGH' %}
+                        <span class="px-2.5 py-0.5 text-xs font-bold rounded bg-amber-100 text-amber-800">High</span>
+                        {% elif task.priority == 'MEDIUM' %}
+                        <span class="px-2.5 py-0.5 text-xs font-semibold rounded bg-sky-100 text-sky-700">Medium</span>
+                        {% else %}
+                        <span class="px-2.5 py-0.5 text-xs font-semibold rounded bg-slate-100 text-slate-700">Low</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Assignment Pathway Header -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div>
+                        <div class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Assigned By (Creator)</div>
+                        <div class="font-bold text-slate-900 mt-1 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+                            {{ task.assigned_by.display_name }}
+                        </div>
+                        <div class="text-slate-500 text-[11px]">{{ task.assigned_by.role }} ({{ task.assigned_by.level_label }})</div>
+                    </div>
+
+                    <div>
+                        <div class="text-slate-400 font-bold uppercase tracking-wider text-[10px]">Assigned To (Worker)</div>
+                        <div class="font-bold text-slate-900 mt-1 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+                            {{ task.assigned_to.display_name }}
+                        </div>
+                        <div class="text-slate-500 text-[11px]">{{ task.assigned_to.role }} ({{ task.assigned_to.level_label }})</div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Description & Notes</h3>
+                    <div class="text-sm text-slate-700 bg-slate-50/50 p-4 rounded-xl border border-slate-100 leading-relaxed whitespace-pre-line">
+                        {{ task.description|default:"No specific instructions provided." }}
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div>
+                    <div class="flex items-center justify-between text-xs font-bold mb-2">
+                        <span class="text-slate-700 uppercase tracking-wider">Execution Progress</span>
+                        <span class="font-mono text-brand-700 text-sm">{{ task.progress }}%</span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                        <div class="bg-gradient-to-r from-brand-500 to-brand-600 h-3 rounded-full transition-all duration-300" style="width: {{ task.progress }}%"></div>
+                    </div>
+                </div>
+
+                <!-- Dates -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs text-slate-600">
+                    <div>
+                        <span class="text-slate-400 block text-[10px] font-bold uppercase">Created On</span>
+                        <span class="font-mono font-medium">{{ task.created_at|date:"M d, Y H:i" }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px] font-bold uppercase">Due Date</span>
+                        <span class="font-mono font-medium">{{ task.due_date|date:"M d, Y"|default:"None" }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px] font-bold uppercase">Completed On</span>
+                        <span class="font-mono font-medium">{{ task.completed_at|date:"M d, Y H:i"|default:"In Progress" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Interactive Work & Progress Action Box (For Assignee or Assigner) -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-bold text-slate-900">Task Progress & Completion Controls</h3>
+                    <span class="text-xs text-slate-500">Update status or submit completion sign-off</span>
+                </div>
+
+                <form method="post" action="{% url 'tasks:update_progress' task.id %}" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <div class="flex items-center justify-between text-xs mb-1.5">
+                            <label for="progress-range" class="font-bold text-slate-700">Set Progress Percentage (0 - 100%)</label>
+                            <span id="progress-val-display" class="font-mono font-bold text-brand-600">{{ task.progress }}%</span>
+                        </div>
+                        <input type="range" name="progress" id="progress-range" min="0" max="100" value="{{ task.progress }}" step="5"
+                               oninput="document.getElementById('progress-val-display').textContent = this.value + '%'"
+                               class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-brand-500">
+                    </div>
+
+                    <div>
+                        <label for="note" class="block text-xs font-bold text-slate-700 mb-1">Status Note / Milestone Update</label>
+                        <input type="text" name="note" id="note" placeholder="e.g., Completed API routes, running integration tests..."
+                               class="w-full px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+                        <button type="submit" name="submit_for_review" value="false" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs transition-colors">
+                            Update Progress
+                        </button>
+                        <button type="submit" name="submit_for_review" value="true" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors shadow-sm flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            <span>Mark 100% & Submit for Review</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Comments & Collaboration -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h3 class="text-sm font-bold text-slate-900">Task Discussion & Notes</h3>
+
+                <div class="space-y-3">
+                    {% for comment in comments %}
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-slate-900">{{ comment.user.display_name }} ({{ comment.user.role }})</span>
+                            <span class="text-[10px] text-slate-400 font-mono">{{ comment.created_at|date:"M d, H:i" }}</span>
+                        </div>
+                        <p class="text-slate-700 leading-relaxed">{{ comment.comment }}</p>
+                    </div>
+                    {% empty %}
+                    <div class="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded-xl">
+                        No discussion comments yet. Start the conversation below.
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <form method="post" action="{% url 'tasks:add_comment' task.id %}" class="flex gap-2 pt-2">
+                    {% csrf_token %}
+                    <input type="text" name="comment" required placeholder="Add a comment or question..."
+                           class="flex-1 px-3.5 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
+                    <button type="submit" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-xl text-xs transition-colors">
+                        Post
+                    </button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Right Col: Multi-Tier Approval Chain & Activity Audit Trail -->
+        <div class="space-y-6">
+
+            <!-- Multi-Tier Approval Chain Card -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                    <h3 class="text-sm font-bold text-slate-900">Approval Chain & Sign-Offs</h3>
+                    <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 bg-slate-100 rounded text-slate-600">
+                        {{ approvals.count }} Sign-Off{{ approvals.count|pluralize }}
+                    </span>
+                </div>
+
+                {% if approvals %}
+                <div class="space-y-3">
+                    {% for app in approvals %}
+                    <div class="p-4 rounded-xl border {% if app.status == 'APPROVED' %}border-emerald-200 bg-emerald-50/50{% elif app.status == 'PENDING' %}border-amber-200 bg-amber-50/50{% else %}border-rose-200 bg-rose-50/50{% endif %} space-y-2">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                                    Tier {{ app.approval_tier }}: {{ app.get_approval_type_display }}
+                                </span>
+                                <div class="font-bold text-slate-900 text-xs mt-0.5">
+                                    {{ app.reviewer.display_name }}
+                                </div>
+                                <div class="text-[11px] text-slate-500">{{ app.reviewer.role }} ({{ app.reviewer.level_label }})</div>
+                            </div>
+                            
+                            <div>
+                                {% if app.status == 'APPROVED' %}
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-100 text-emerald-800">Approved</span>
+                                {% elif app.status == 'PENDING' %}
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-amber-100 text-amber-800 animate-pulse">Pending</span>
+                                {% else %}
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded bg-rose-100 text-rose-800">Rejected</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if app.comments %}
+                        <div class="text-[11px] text-slate-700 bg-white/80 p-2 rounded-lg border border-slate-200/60">
+                            <strong>Feedback:</strong> {{ app.comments }}
+                        </div>
+                        {% endif %}
+
+                        <!-- Direct Review Action Button if Current User is the designated reviewer -->
+                        {% if app.reviewer_id == user.id and app.status == 'PENDING' %}
+                        <div class="pt-2 border-t border-amber-200/80">
+                            <a href="{% url 'approvals:pending_list' %}" class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs transition-colors">
+                                <span>Action Required: Review in Approvals</span>
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="p-4 text-center text-xs text-slate-400 bg-slate-50 rounded-xl">
+                    No extra managerial approvals required for direct subordinate delegation.
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Activity Audit Trail -->
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <h3 class="text-sm font-bold text-slate-900 pb-3 border-b border-slate-100">Activity Timeline</h3>
+
+                <div class="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+                    {% for act in activities %}
+                    <div class="relative text-xs">
+                        <div class="absolute -left-6 top-0.5 w-2.5 h-2.5 rounded-full bg-brand-500 ring-4 ring-white"></div>
+                        <div class="font-semibold text-slate-900">{{ act.message }}</div>
+                        <div class="text-[10px] text-slate-400 mt-0.5 font-mono">{{ act.created_at|date:"M d, H:i:s" }}</div>
+                    </div>
+                    {% empty %}
+                    <div class="text-xs text-slate-400">No activity recorded yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% load static %}
+<!-- Sidebar -->
+<aside id="taskforge-sidebar" class="w-64 bg-slate-950 text-slate-300 flex flex-col flex-shrink-0 border-r border-slate-800 transition-all duration-300 z-30 select-none">
+    <!-- Brand Header -->
+    <div class="h-16 flex items-center justify-between px-5 border-b border-slate-800/80 bg-slate-950">
+        <a href="{% url 'tasks:dashboard' %}" class="flex items-center gap-3 group">
+            <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center font-extrabold text-slate-950 text-sm shadow-md shadow-brand-500/20 group-hover:scale-105 transition-transform tracking-wider">
+                TF
+            </div>
+            <div class="flex flex-col">
+                <span class="font-bold text-white text-base tracking-tight leading-tight flex items-center gap-1.5">
+                    TaskForge
+                    <span class="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-brand-500/20 text-brand-300 border border-brand-500/30">Enterprise</span>
+                </span>
+                <span class="text-xs text-slate-400 truncate max-w-[130px]">
+                    {{ user.organization.name|default:"Workspace" }}
+                </span>
+            </div>
+        </a>
+    </div>
+
+    <!-- Quick Action: Create Task -->
+    <div class="px-3 pt-3 pb-1">
+        <a href="{% url 'tasks:create_task' %}" class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-slate-950 font-bold rounded-xl text-xs transition-all shadow-md shadow-brand-500/20 hover:scale-[1.02]">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+            </svg>
+            <span>Create New Task</span>
+        </a>
+    </div>
+
+    <!-- Navigation Items -->
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto" aria-label="Main Navigation">
+        <!-- Dashboard -->
+        <a href="{% url 'tasks:dashboard' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {% if request.resolver_match.url_name == 'dashboard' %}bg-brand-500 text-slate-950 font-semibold shadow-sm shadow-brand-500/30{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            <span>Dashboard</span>
+        </a>
+
+        <!-- Tasks / Kanban -->
+        <a href="{% url 'tasks:task_list' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {% if 'tasks' in request.resolver_match.namespace and request.resolver_match.url_name != 'dashboard' %}bg-brand-500 text-slate-950 font-semibold shadow-sm shadow-brand-500/30{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            </svg>
+            <span>Tasks</span>
+        </a>
+
+        <!-- Team -->
+        <a href="{% url 'accounts:team_list' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {% if request.resolver_match.url_name == 'team_list' %}bg-brand-500 text-slate-950 font-semibold shadow-sm shadow-brand-500/30{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            <span>Direct Team</span>
+        </a>
+
+        <!-- Hierarchy Tree -->
+        <a href="{% url 'hierarchy:hierarchy_view' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {% if 'hierarchy' in request.resolver_match.namespace %}bg-brand-500 text-slate-950 font-semibold shadow-sm shadow-brand-500/30{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v6m-3-3h6"/>
+            </svg>
+            <span>Hierarchy</span>
+        </a>
+
+        <!-- Approvals -->
+        <a href="{% url 'approvals:pending_list' %}" class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {% if 'approvals' in request.resolver_match.namespace %}bg-brand-500 text-slate-950 font-semibold shadow-sm shadow-brand-500/30{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span>Approvals</span>
+            </div>
+            {% if pending_approvals_count %}
+            <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-amber-400 text-slate-950">
+                {{ pending_approvals_count }}
+            </span>
+            {% endif %}
+        </a>
+
+        <!-- Reports -->
+        <a href="{% url 'reports:report_dashboard' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {% if 'reports' in request.resolver_match.namespace %}bg-brand-500 text-slate-950 font-semibold shadow-sm shadow-brand-500/30{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            <span>Reports</span>
+        </a>
+
+        <!-- Notifications -->
+        <a href="{% url 'notifications:notification_list' %}" class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {% if 'notifications' in request.resolver_match.namespace %}bg-brand-500 text-slate-950 font-semibold shadow-sm shadow-brand-500/30{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
+            <div class="flex items-center gap-3">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+                <span>Notifications</span>
+            </div>
+            {% if unread_notifications_count %}
+            <span class="px-2 py-0.5 text-xs font-bold rounded-full bg-brand-400 text-slate-950">
+                {{ unread_notifications_count }}
+            </span>
+            {% endif %}
+        </a>
+
+        <!-- Settings / Organization -->
+        <a href="{% url 'organizations:organization_settings' %}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors {% if 'organizations' in request.resolver_match.namespace %}bg-brand-500 text-slate-950 font-semibold shadow-sm shadow-brand-500/30{% else %}text-slate-300 hover:text-white hover:bg-slate-800/60{% endif %}">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+            <span>Organization</span>
+        </a>
+    </nav>
+
+    <!-- User Profile Card in Sidebar Footer -->
+    <div class="p-3 border-t border-slate-800/80 bg-slate-950/60">
+        <a href="{% url 'accounts:profile' %}" class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-800/60 transition-colors group">
+            <div class="w-9 h-9 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-brand-400 font-bold text-sm overflow-hidden flex-shrink-0">
+                {% if user.profile_picture %}
+                    <img src="{{ user.profile_picture.url }}" alt="{{ user.get_full_name }}" class="w-full h-full object-cover">
+                {% else %}
+                    {{ user.first_name|default:user.username|make_list|first|upper }}
+                {% endif %}
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-white truncate leading-tight group-hover:text-brand-300 transition-colors">
+                    {{ user.get_full_name|default:user.username }}
+                </p>
+                <div class="flex items-center gap-1 mt-0.5">
+                    <span class="text-[10px] font-bold px-1.5 py-0.2 rounded bg-slate-800 text-brand-400 border border-brand-500/30">
+                        {{ user.level_label }}
+                    </span>
+                </div>
+            </div>
+        </a>
+    </div>
+</aside>

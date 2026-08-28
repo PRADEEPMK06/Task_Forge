@@ -1,0 +1,55 @@
+/* TaskForge Enterprise Custom Design System */
+
+:root {
+  --tf-primary: #14B8A6;
+  --tf-primary-dark: #0D9488;
+  --tf-sidebar-bg: #070A11;
+  --tf-border: #E2E8F0;
+  --tf-bg-neutral: #F8FAFC;
+}
+
+/* Custom Scrollbar for Kanban and Sidebar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Hierarchy Tree Visual Styling */
+.tf-tree-node {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.tf-tree-node:hover {
+  transform: translateY(-2px);
+}
+
+/* Kanban column min-width & drag styles */
+.kanban-column {
+  min-width: 320px;
+  max-width: 360px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Focus styles for accessibility */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid #14B8A6;
+  outline-offset: 2px;
+}

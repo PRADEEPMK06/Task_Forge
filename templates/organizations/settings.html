@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Organization Settings — TaskForge Enterprise{% endblock %}
+{% block page_heading %}Enterprise Organization & Workspace Settings{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-bold uppercase tracking-wider mb-2 border border-brand-200">
+                Workspace Admin
+            </div>
+            <h1 class="text-2xl font-extrabold text-slate-900">Organization Settings</h1>
+            <p class="text-xs text-slate-500 mt-1">Configure company workspace parameters, codes, and access permissions.</p>
+        </div>
+    </div>
+
+    <!-- Details Card -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div class="space-y-1">
+                <span class="text-xs font-bold uppercase text-slate-400">Organization Name</span>
+                <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 font-bold text-slate-900">
+                    {{ org.name|default:"TaskForge Enterprise HQ" }}
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <span class="text-xs font-bold uppercase text-slate-400">Enterprise Code (Join Code)</span>
+                <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 font-mono font-bold text-slate-900 flex items-center justify-between">
+                    <span>{{ org.organization_code|default:"TF-ORG-HQ2026" }}</span>
+                    <button onclick="navigator.clipboard.writeText('{{ org.organization_code }}'); window.showToast('Copied org code!', 'success');" class="text-xs text-brand-600 hover:text-brand-700 font-sans font-medium">Copy</button>
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <span class="text-xs font-bold uppercase text-slate-400">Active Personnel Count</span>
+                <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 font-bold text-slate-900">
+                    {{ members_count }} members enrolled
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <span class="text-xs font-bold uppercase text-slate-400">Workspace Status</span>
+                <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 font-bold text-emerald-600 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>Operational & Healthy</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

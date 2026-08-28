@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Enterprise Analytics & Reports — TaskForge{% endblock %}
+{% block page_heading %}Enterprise Performance & Metrics{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-bold uppercase tracking-wider mb-2 border border-brand-200">
+                Live Enterprise Insights
+            </div>
+            <h1 class="text-2xl font-extrabold text-slate-900">Analytics & Workload Reports</h1>
+            <p class="text-xs text-slate-500 mt-1">Cross-team performance metrics, completion rates, and priority workloads.</p>
+        </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold uppercase text-slate-400">Total Work Orders</span>
+            <div class="text-3xl font-extrabold text-slate-900 mt-1">{{ total_tasks }}</div>
+            <span class="text-xs text-slate-500 mt-1 block">Assigned across org</span>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold uppercase text-slate-400">Completion Rate</span>
+            <div class="text-3xl font-extrabold text-emerald-600 mt-1">{{ completion_rate }}%</div>
+            <span class="text-xs text-slate-500 mt-1 block">{{ completed_tasks }} tasks resolved</span>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold uppercase text-slate-400">In Active Progress</span>
+            <div class="text-3xl font-extrabold text-brand-600 mt-1">{{ in_progress_tasks }}</div>
+            <span class="text-xs text-slate-500 mt-1 block">Actively being worked on</span>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-bold uppercase text-slate-400">Awaiting Sign-off</span>
+            <div class="text-3xl font-extrabold text-amber-500 mt-1">{{ submitted_tasks }}</div>
+            <span class="text-xs text-slate-500 mt-1 block">Pending approval</span>
+        </div>
+    </div>
+
+    <!-- Priority Distribution Cards -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+        <h2 class="text-base font-bold text-slate-900 mb-4">Task Priority Breakdown</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div class="p-4 bg-rose-50 border border-rose-100 rounded-xl">
+                <span class="text-xs font-bold text-rose-700 uppercase">Critical Priority</span>
+                <div class="text-2xl font-black text-rose-900 mt-1">{{ priority_counts.CRITICAL }}</div>
+            </div>
+            <div class="p-4 bg-orange-50 border border-orange-100 rounded-xl">
+                <span class="text-xs font-bold text-orange-700 uppercase">High Priority</span>
+                <div class="text-2xl font-black text-orange-900 mt-1">{{ priority_counts.HIGH }}</div>
+            </div>
+            <div class="p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                <span class="text-xs font-bold text-blue-700 uppercase">Medium Priority</span>
+                <div class="text-2xl font-black text-blue-900 mt-1">{{ priority_counts.MEDIUM }}</div>
+            </div>
+            <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                <span class="text-xs font-bold text-slate-700 uppercase">Low Priority</span>
+                <div class="text-2xl font-black text-slate-900 mt-1">{{ priority_counts.LOW }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

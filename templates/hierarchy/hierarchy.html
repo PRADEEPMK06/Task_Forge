@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Organizational Hierarchy — TaskForge Enterprise{% endblock %}
+{% block page_heading %}Enterprise Reporting Tree & Hierarchy{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 text-xs font-bold uppercase tracking-wider mb-2 border border-brand-200">
+                Organization Tree
+            </div>
+            <h1 class="text-2xl font-extrabold text-slate-900">Reporting Hierarchy & Structure</h1>
+            <p class="text-xs text-slate-500 mt-1">Hierarchical tree view of reporting chains and leadership tiers.</p>
+        </div>
+    </div>
+
+    <!-- Tree View Card -->
+    <div class="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
+        <div class="space-y-6">
+            {% for root in roots %}
+            <div class="border border-slate-200 rounded-xl p-5 bg-slate-50/50">
+                <!-- Root Leader Node -->
+                <div class="flex items-center justify-between p-4 bg-slate-900 text-white rounded-xl shadow-md">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-brand-500 text-slate-950 font-bold flex items-center justify-center text-sm">
+                            {{ root.first_name|first|default:root.username|first|upper }}
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-white">{{ root.get_full_name|default:root.username }}</div>
+                            <div class="text-xs text-brand-300 font-medium">{{ root.role }}</div>
+                        </div>
+                    </div>
+                    <span class="text-xs font-mono px-2 py-0.5 bg-slate-800 rounded text-slate-300">{{ root.user_code }}</span>
+                </div>
+
+                <!-- Subordinate Branch -->
+                {% if root.subordinates.exists %}
+                <div class="mt-4 pl-6 border-l-2 border-slate-300 space-y-3">
+                    {% for sub in root.subordinates.all %}
+                    <div class="flex items-center justify-between p-3.5 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-brand-500 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200">
+                                {{ sub.first_name|first|default:sub.username|first|upper }}
+                            </div>
+                            <div>
+                                <div class="font-bold text-xs text-slate-900">{{ sub.get_full_name|default:sub.username }}</div>
+                                <div class="text-[11px] text-slate-500">{{ sub.role }}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-mono px-2 py-0.5 bg-slate-100 rounded text-slate-600">{{ sub.user_code }}</span>
+                            <span class="text-xs px-2 py-0.5 bg-brand-50 text-brand-700 rounded-full font-semibold">{{ sub.received_tasks.count }} Tasks</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="text-center py-12 text-slate-400">
+                <p class="text-sm">No organizational hierarchy nodes initialized.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
